@@ -15,6 +15,9 @@ public class HomeActivity extends PluginBaseActivity implements View.OnClickList
 		button=(Button) findViewById(R.id.btn);
 		button.setOnClickListener(this);
 	}
+	
+	
+	
 	@Override
 	public void onClick(View v) {
 		Toast.makeText(getBaseContext(),"回调",Toast.LENGTH_LONG).show();

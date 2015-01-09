@@ -16,20 +16,24 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.DisplayMetrics;
+import android.util.Log;
 
 public class ProxyAcivity extends Activity {
 
+	public static final String TAG="ProxyAcivity";
 	public static final boolean DEBUG = true;
-
+	public static final String PROXY="proxy_obj";
+	
+	
+	
 	PluginInterfaceWrapper mPluginInterface;
-	private String mProxyClassName;
-	private String mApkPath;
-	private String mApkPathName;
-	private String mApkName;
 	private Class mProxyClass;
-	private DexClassLoader mDexClassLoader;
 	private ContextProxy<Activity> mContextProxy;
+	private  ProxyInfo mProxyInfo;
+	APKClassHandler<PluginInterface> mClassHandler;
 	
 	
 	@Override
@@ -37,19 +41,32 @@ public class ProxyAcivity extends Activity {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		Intent intent = getIntent();
-//			获取
-//			mProxyClassName=intent.getStringExtra("ClassName");
-		if (DEBUG) {
-			mProxyClassName = "com.none.pluginapp.HomeActivity";
-			mApkPath = "/plugin/pluginApp.apk";
-			mApkName = "pluginApp";
-			
+		ProxyInfo proxyInfo=intent.getParcelableExtra(PROXY);
+		
+		if(proxyInfo==null){
+			proxyInfo=savedInstanceState.getParcelable(PROXY);
+			if(proxyInfo==null){
+				if(DEBUG){
+					Log.d(TAG,"no proxyInfo finish activity");
+				}
+			}
 		}
+		
+		mProxyInfo=proxyInfo;
+		if (DEBUG) {
+			mProxyInfo=new ProxyInfo();
+			mProxyInfo.mApkName="pluginApp";
+			mProxyInfo.mApkPath="/plugin/pluginApp.apk";
+			mProxyInfo.mProxyClassName="com.none.pluginapp.HomeActivity";
+		}
+		
 		laodApk();
 		loadClass();
 		init();
 		mPluginInterface.onCreate(savedInstanceState);
 	}
+	
+	
 	
 	@Override
 	protected void onStart() {
@@ -58,22 +75,23 @@ public class ProxyAcivity extends Activity {
 	}
 	
 	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		// TODO Auto-generated method stub
+		super.onSaveInstanceState(outState);
+		outState.putParcelable(PROXY, mProxyInfo);
+		
+	}
+	@Override
+	protected void onRestoreInstanceState(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onRestoreInstanceState(savedInstanceState);
+	}
+	
+	@Override
 	protected void onStop() {
 		mPluginInterface.onStop();
 		super.onStop();
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	void init(){
 		AssetManager assetManager = createAssetManager();
 		Resources resources = createResource(assetManager, getResources());
@@ -128,5 +146,64 @@ public class ProxyAcivity extends Activity {
 			e.printStackTrace();
 		}
 		return resources;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	//不用对象了..
+	public static class ProxyInfo implements Parcelable{
+		public String mProxyClassName;
+		public String mApkPath;
+		public String mApkName;
+		
+		@Override
+		public int describeContents() {
+			return 0;
+		}
+		@Override
+		public void writeToParcel(Parcel dest, int flags) {
+			dest.writeString(mProxyClassName);
+			dest.writeString(mApkPath);
+			dest.writeString(mApkName);
+		}
+		public static class CREATOR implements Parcelable.Creator<ProxyInfo>{
+
+			@Override
+			public ProxyInfo createFromParcel(Parcel source) {
+				ProxyInfo proxyInfo=new ProxyInfo();
+				proxyInfo.mProxyClassName=source.readString();
+				proxyInfo.mApkPath=source.readString();
+				proxyInfo.mApkName=source.readString();
+				return proxyInfo;
+			}
+			@Override
+			public ProxyInfo[] newArray(int size) {
+				return null;
+			}
+			
+		}
 	}
 }
