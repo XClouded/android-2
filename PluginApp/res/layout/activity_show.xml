@@ -8,24 +8,12 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="我是插件activity" />
-    <Button 
-        android:id="@+id/btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="我是按钮"
-        />
+        android:text="我是插件中的showActivity" />
 	<Button 
         android:id="@+id/btnLocalActivity"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="跳转到localActivity"
-        />
-	<Button 
-        android:id="@+id/btnLocalForResultActivity"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="跳转到localActivity,同时获取返回"
+        android:text="跳转到LocalActivity"
         />
 	<Button 
         android:id="@+id/btnHostActivity"

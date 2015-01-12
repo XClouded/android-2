@@ -3,13 +3,13 @@ package com.none.pluginhost;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import dalvik.system.DexClassLoader;
 
 public class APKClassLoaderHolder {
 	public static final byte[] LOCK=new byte[1];
+	//用odex路径最为classloader路径
 	private HashMap<String,Reference<DexClassLoader>> holder;
 	private static APKClassLoaderHolder INSTANCE;
 	private ReentrantReadWriteLock readWriteLock;

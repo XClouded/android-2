@@ -1,4 +1,4 @@
-package com.none.plugin;
+package com.none.plugininterface;
 
 import android.content.Context;
 import android.content.res.AssetManager;

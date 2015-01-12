@@ -1,6 +1,7 @@
 package com.none.pluginhost;
 
-import com.none.plugin.ContextProxy;
+
+import com.none.plugininterface.ContextProxy;
 
 import android.app.Activity;
 import android.content.Context;
