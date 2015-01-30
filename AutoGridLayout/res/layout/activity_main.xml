@@ -2,50 +2,46 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="4dp"
-    android:background="@android:color/black"
+    android:background="@android:color/white"
     tools:context="${relativePackage}.${activityClass}" >
-	<GridView 
-		android:horizontalSpacing="1dp"	    
-		android:verticalSpacing="1dp"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-	    android:numColumns="3"
-	    >
-	 
-	         
-	</GridView>
-<!--     <com.example.autogridlayout.AutoGridLayout 
+
+    <com.example.autogridlayout.AutoGridLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/bg"
-        >
-        <View  
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:background="@color/v1"
-        />
-        <View  
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:background="@color/v4"
-        />
-        <View  
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:background="@color/v2"
-        />
-        <View  
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:background="@color/v3"
-        />
-        <View  
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:background="@color/v4"
-        />
+        android:background="@color/bg" >
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:background="@color/v1" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:background="@color/v4" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:background="@color/v2" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:background="@color/v3" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:background="@color/v7" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:background="@color/v5" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:background="@color/v6" />
     </com.example.autogridlayout.AutoGridLayout>
-         -->
-        
+
 </RelativeLayout>

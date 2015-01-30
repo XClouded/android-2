@@ -1,6 +1,11 @@
 package com.example.autogridlayout;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import android.R.integer;
 import android.content.Context;
+import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -10,9 +15,9 @@ import android.view.ViewDebug.HierarchyTraceType;
 
 public class AutoGridLayout extends ViewGroup {
 
-	private static final String TAG="AutoGridLayout";
-	private static final boolean DEBUG=true;
-	
+	private static final String TAG = "AutoGridLayout";
+	private static final boolean DEBUG = true;
+
 	private static int ROWPX_UNIT = 200;//px;
 
 	private static int VIEW_STATUS_MASK = 0x00;
@@ -20,10 +25,18 @@ public class AutoGridLayout extends ViewGroup {
 	private static int MEASURE_ROW = 0x01;
 
 	private int mViewStatus;
-
+	private boolean mShowDividingLine=true;
+	private int mDividingLineWidth=1;//px
+	
+	private List<Integer> mHorizontalLines; 
+	private List<Integer> mVerticalLines;
+	
 	public AutoGridLayout(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		mViewStatus = 0x00;
+		setWillNotDraw(false);
+		mHorizontalLines=new ArrayList<Integer>();
+		mVerticalLines=new ArrayList<Integer>();
 	}
 
 	/* (non-Javadoc)
@@ -37,25 +50,22 @@ public class AutoGridLayout extends ViewGroup {
 	private int mRowNumber;
 	private int mRowAVGWidth;
 	
-	
 	//why? onMeasure method is called by twice?
 	@Override
 	protected final void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-//		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-		final int widthMode = MeasureSpec.getMode(widthMeasureSpec);
 		final int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-		if(DEBUG){
-			final int heightMode=MeasureSpec.getMode(heightMeasureSpec);
+		if (DEBUG) {
+			final int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+			final int heigth = MeasureSpec.getSize(heightMeasureSpec);
 			switch (heightMode) {
 				case MeasureSpec.AT_MOST:
-					log("height mode at_most");
+					log("height mode at_most %d", heigth);
 					break;
 				case MeasureSpec.EXACTLY:
-					log("height mode EXACTLY");
-					
+					log("height mode EXACTLY %d", heigth);
 					break;
 				case MeasureSpec.UNSPECIFIED:
-					log("height mode UNSPECIFIED");
+					log("height mode UNSPECIFIED %d", heigth);
 				default:
 					break;
 			}
@@ -63,38 +73,44 @@ public class AutoGridLayout extends ViewGroup {
 		//进行宽度测量。atMost 和 Exactly 都是用widthSize。
 		int realWidthContent = widthSize - getPaddingLeft() - getPaddingRight();
 		measureRowNumber(realWidthContent, ROWPX_UNIT);
-		
+
 		final int childCount = getChildCount();
-
-		//measureChildWithMargins(child, parentWidthMeasureSpec, widthUsed, parentHeightMeasureSpec, heightUsed)
-
 		final int childWidthSpec = MeasureSpec.makeMeasureSpec(mRowAVGWidth, MeasureSpec.EXACTLY);
 
 		int heightTotal = 0;
-		
-		for (int i = 0; i < childCount;) {
-			int maxHeight=0;
-			for(int j=0;j<mRowNumber;j++){
-				final View child = getChildAt(i*mRowNumber+j);
-				if(child==null){
+
+		for (int i = 0, row = 0; i < childCount;) {
+			int maxHeight = 0;
+			for (int j = 0; j < mRowNumber; j++) {
+				final View child = getChildAt(row * mRowNumber + j);
+				if (child == null) {
 					break;
 				}
 				ViewGroup.LayoutParams params = child.getLayoutParams();
-				child.measure(childWidthSpec, ViewGroup.getChildMeasureSpec(heightMeasureSpec, getPaddingBottom() + getPaddingTop(), params.height));
+				final int childHeightSpec = ViewGroup.getChildMeasureSpec(heightMeasureSpec, getPaddingBottom() + getPaddingTop(), params.height);
+				child.measure(childWidthSpec, childHeightSpec);
 				final int childMeasureHeigth = child.getMeasuredHeight();
+				if (DEBUG) {
+					log("chiled %d %d measure height mode %s size %d",row,j,specModeToString(MeasureSpec.getMode(childHeightSpec)),MeasureSpec.getSize(childHeightSpec));
+				}
 				int childSize = Math.max(childMeasureHeigth, getSuggestedMinimumHeight());
-				maxHeight=maxHeight>childSize?maxHeight:childSize;
+				maxHeight = maxHeight > childSize ? maxHeight : childSize;
 			}
 			heightTotal += maxHeight;
-			for(int j=0;j<mRowNumber;j++){
-				final View child = getChildAt(i*mRowNumber+j);
-				if(child==null){
+			for (int j = 0; j < mRowNumber; j++) {
+				final View child = getChildAt(row * mRowNumber + j);
+				if (child == null) {
 					break;
 				}
-				ViewGroup.LayoutParams params = child.getLayoutParams();
-				child.measure(childWidthSpec, ViewGroup.getChildMeasureSpec(heightMeasureSpec, getPaddingBottom() + getPaddingTop(),maxHeight));
+				child.measure(childWidthSpec, ViewGroup.getChildMeasureSpec(heightMeasureSpec, getPaddingBottom() + getPaddingTop(), maxHeight));
+				if (DEBUG) {
+					int measureHeight = child.getMeasuredHeight();
+					int measureWidth = child.getMeasuredWidth();
+					log("final child %d %d width %d heigth %d", row, j, measureWidth, measureHeight);
+				}
 			}
-			i+=mRowNumber;
+			i += mRowNumber;
+			row += 1;
 		}
 		int specMode = MeasureSpec.getMode(heightMeasureSpec);
 		int specSize = MeasureSpec.getSize(heightMeasureSpec);
@@ -116,6 +132,7 @@ public class AutoGridLayout extends ViewGroup {
 				break;
 		}
 		setMeasuredDimension(widthSize, resultHeight);
+		log("layout width %d heigth %d", widthSize, resultHeight);
 	}
 
 	/**
@@ -134,42 +151,93 @@ public class AutoGridLayout extends ViewGroup {
 		mRowAVGWidth = (int) (widthAvg + 1);
 	}
 
+	private String specModeToString(int mode) {
+		final String modeDescription;
+		switch (mode) {
+			case 0 << 30:
+				modeDescription = "UNSPECIFIED";
+				break;
+			case 1 << 30:
+				modeDescription = "EXACTLY";
+				break;
+			case 2 << 30:
+				modeDescription = "AT_MOST";
+				break;
+			default:
+				modeDescription = "unknow";
+				break;
+		}
+		return modeDescription;
+	}
+	@Override
+	protected void onDraw(Canvas canvas) {
+		//draw dividingLine
+		if(!mShowDividingLine){
+			return;
+		}
+		log("begin draw dividingLine");
+	}
 	@Override
 	protected void onLayout(boolean changed, int l, int t, int r, int b) {
-		final int widthChild=mRowAVGWidth;
-		final int rowNumber=mRowNumber;
-		final int childCount=getChildCount();
-		final int columnNumber=childCount/rowNumber+(childCount%rowNumber==0?0:1);
-		if(DEBUG){
-			log("gridlayout rowNumber %d columnNumber %d",mRowNumber,columnNumber);
+		final int widthChild = mRowAVGWidth;
+		final int rowNumber = mRowNumber;
+		mVerticalLines.clear();
+		mHorizontalLines.clear();
+		final int childCount = getChildCount();
+		final int columnNumber = childCount / rowNumber + (childCount % rowNumber == 0 ? 0 : 1);
+		if (DEBUG) {
+			log("gridlayout rowNumber %d columnNumber %d", mRowNumber, columnNumber);
+			log("onlayout l %d t %d r %d b %d", l, t, r, b);
 		}
-		int row=0;
-		int column=0;
-		for(int index=0;index<childCount;index++){
-			final View child=getChildAt(index);
-//			child.layout(column, childCount, row, columnNumber);
-			final int measureHeight=child.getMeasuredHeight();
-			final int measureWidth=child.getMeasuredWidth();
-			l=l+measureWidth*row;
-			t=t+measureHeight*column;
-			if((index+1)%mRowNumber==0){
+		int left = l;
+		int top = t;
+		for (int row = 0, column = 0; row + column * rowNumber < childCount;) {
+			final View child = getChildAt(row + column * rowNumber);
+			final int measureHeight = child.getMeasuredHeight();
+			child.layout(left, top, left + widthChild, top + measureHeight);
+			if (DEBUG) {
+				log("child %d %d left %d top %d right %d bottom %d",row,column, left, top, left + widthChild,top + measureHeight);
+			}
+			if((row+1)==rowNumber){
+				column+=1;
 				row=0;
-				column+=column;
+				top+=measureHeight;
+				left=l;
 			}else{
 				row+=1;
+				left+=widthChild;
 			}
-			child.layout(l, t, l+measureWidth, t+measureHeight);
-			if(DEBUG){
-				log("child %d left %d top %d right %d bottom %d",index,l,t,l+measureWidth,t+measureHeight);
-			}
-			//child.layout(l+measureHeight, measureHeight, measureWidth, columnNumber)
-//			log("measure Heigth %d", measureHeight);
-//			log("measure width %d", measureWidth);
 		}
+		
+		
+		
+		for(int i=0;i<(rowNumber-1)*(columnNumber-1);i++){
+			
+		}
+		
+	}
+
+	public void log(String message, Object... args) {
+		message = String.format(message, args);
+		Log.d(TAG, message);
 	}
 	
-	public void log(String message,Object... args){
-		message=String.format(message, args);
-		Log.d(TAG, message);
+	private Line makeLine(int sx,int sy,int ex ,int ey){
+		return new Line(sx, sy, ex, ey);
+	}
+	
+	public class Line{
+		int sx;
+		int sy;
+		int ex;
+		int ey;
+		public Line(int sx, int sy, int ex, int ey) {
+			super();
+			this.sx = sx;
+			this.sy = sy;
+			this.ex = ex;
+			this.ey = ey;
+		}
+		
 	}
 }
