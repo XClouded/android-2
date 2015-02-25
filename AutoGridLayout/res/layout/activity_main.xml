@@ -6,8 +6,12 @@
     tools:context="${relativePackage}.${activityClass}" >
 
     <com.example.autogridlayout.AutoGridLayout
+       	xmlns:au="http://schemas.android.com/apk/res/com.example.autogridlayout"
+       	au:lineColor="#222222"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/pp"
+        android:visibility="visible"
         android:background="@color/bg" >
 
         <View

@@ -5,15 +5,18 @@ import java.util.List;
 
 import android.R.integer;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.MeasureSpec;
 import android.view.ViewDebug.HierarchyTraceType;
+import android.view.ViewTreeObserver;
 
-public class AutoGridLayout extends ViewGroup {
+public class AutoGridLayout extends ViewGroup implements ViewTreeObserver.OnPreDrawListener {
 
 	private static final String TAG = "AutoGridLayout";
 	private static final boolean DEBUG = true;
@@ -25,18 +28,30 @@ public class AutoGridLayout extends ViewGroup {
 	private static int MEASURE_ROW = 0x01;
 
 	private int mViewStatus;
-	private boolean mShowDividingLine=true;
-	private int mDividingLineWidth=1;//px
-	
-	private List<Integer> mHorizontalLines; 
+	private boolean mShowDividingLine = true;
+	private int mDividingLineWidth = 1;//px
+
+	private List<Integer> mHorizontalLines;
 	private List<Integer> mVerticalLines;
-	
+
 	public AutoGridLayout(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		mViewStatus = 0x00;
 		setWillNotDraw(false);
 		mHorizontalLines=new ArrayList<Integer>();
 		mVerticalLines=new ArrayList<Integer>();
+		//下面是attribute 测试    
+//		 	<attr name="lineColor" format="color|reference"/>
+//	        <attr name="lineSize" format="dimension"/>
+//	        <attr name="number" format="integer"/>
+//	        <attr name="line_full" format="boolean"></attr>
+		TypedArray array=context.obtainStyledAttributes(attrs,R.styleable.Autogrid_layout,R.attr.theme_def,R.style.def);
+		log("lineColor value %s",array.getColor(R.styleable.Autogrid_layout_lineColor, Color.RED));
+		log("number value %d",array.getInt(R.styleable.Autogrid_layout_number,3));
+		log("line_full "+array.getBoolean(R.styleable.Autogrid_layout_line_full,false));
+		log("typedarray value "+array.toString());
+		array.recycle();
+		
 	}
 
 	/* (non-Javadoc)
@@ -49,7 +64,7 @@ public class AutoGridLayout extends ViewGroup {
 	 */
 	private int mRowNumber;
 	private int mRowAVGWidth;
-	
+
 	//why? onMeasure method is called by twice?
 	@Override
 	protected final void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -91,7 +106,8 @@ public class AutoGridLayout extends ViewGroup {
 				child.measure(childWidthSpec, childHeightSpec);
 				final int childMeasureHeigth = child.getMeasuredHeight();
 				if (DEBUG) {
-					log("chiled %d %d measure height mode %s size %d",row,j,specModeToString(MeasureSpec.getMode(childHeightSpec)),MeasureSpec.getSize(childHeightSpec));
+					log("chiled %d %d measure height mode %s size %d", row, j, specModeToString(MeasureSpec.getMode(childHeightSpec)),
+							MeasureSpec.getSize(childHeightSpec));
 				}
 				int childSize = Math.max(childMeasureHeigth, getSuggestedMinimumHeight());
 				maxHeight = maxHeight > childSize ? maxHeight : childSize;
@@ -169,14 +185,16 @@ public class AutoGridLayout extends ViewGroup {
 		}
 		return modeDescription;
 	}
+
 	@Override
 	protected void onDraw(Canvas canvas) {
 		//draw dividingLine
-		if(!mShowDividingLine){
+		if (!mShowDividingLine) {
 			return;
 		}
 		log("begin draw dividingLine");
 	}
+
 	@Override
 	protected void onLayout(boolean changed, int l, int t, int r, int b) {
 		final int widthChild = mRowAVGWidth;
@@ -196,41 +214,40 @@ public class AutoGridLayout extends ViewGroup {
 			final int measureHeight = child.getMeasuredHeight();
 			child.layout(left, top, left + widthChild, top + measureHeight);
 			if (DEBUG) {
-				log("child %d %d left %d top %d right %d bottom %d",row,column, left, top, left + widthChild,top + measureHeight);
+				log("child %d %d left %d top %d right %d bottom %d", row, column, left, top, left + widthChild, top + measureHeight);
 			}
-			if((row+1)==rowNumber){
-				column+=1;
-				row=0;
-				top+=measureHeight;
-				left=l;
-			}else{
-				row+=1;
-				left+=widthChild;
+			if ((row + 1) == rowNumber) {
+				column += 1;
+				row = 0;
+				top += measureHeight;
+				left = l;
+			}
+			else {
+				row += 1;
+				left += widthChild;
 			}
 		}
-		
-		
-		
-		for(int i=0;i<(rowNumber-1)*(columnNumber-1);i++){
-			
+		for (int i = 0; i < (rowNumber - 1) * (columnNumber - 1); i++) {
+
 		}
-		
+
 	}
 
 	public void log(String message, Object... args) {
 		message = String.format(message, args);
 		Log.d(TAG, message);
 	}
-	
-	private Line makeLine(int sx,int sy,int ex ,int ey){
+
+	private Line makeLine(int sx, int sy, int ex, int ey) {
 		return new Line(sx, sy, ex, ey);
 	}
-	
-	public class Line{
+
+	public class Line {
 		int sx;
 		int sy;
 		int ex;
 		int ey;
+
 		public Line(int sx, int sy, int ex, int ey) {
 			super();
 			this.sx = sx;
@@ -238,6 +255,11 @@ public class AutoGridLayout extends ViewGroup {
 			this.ex = ex;
 			this.ey = ey;
 		}
-		
+
+	}
+
+	@Override
+	public boolean onPreDraw() {
+		return false;
 	}
 }

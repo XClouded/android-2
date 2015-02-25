@@ -2,19 +2,33 @@
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
-        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
+        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
     -->
     <style name="AppBaseTheme" parent="@android:style/Theme.Black">
         <!--
             Theme customizations available in newer API levels can go in
             res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
+            backward-compatibility can go here.
         -->
     </style>
 
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppBaseTheme">
+
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+      <!--   <item name="theme_def">@style/def_autogrid</item> -->
+    </style>
+
+    <style name="def_autogrid">
+        <item name="lineColor">#ffeedd11</item>
+        <item name="lineSize">2dp</item>
+    </style>
+
+    <style name="def">
+        <item name="lineColor">#ff231234</item>
+        <item name="lineSize">2dp</item>
+        <item name="number">6</item>
+        <item name="line_full">true</item>
     </style>
 
 </resources>
